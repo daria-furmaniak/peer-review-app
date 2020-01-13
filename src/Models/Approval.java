@@ -1,8 +1,9 @@
-import java.time.LocalDateTime;
+package Models;
+import java.sql.Date;
 
 public class Approval {
 	public Document Document;
 	public User User;
 	public boolean Approved;
-	public LocalDateTime Timestamp;
+	public Date Timestamp;
 }

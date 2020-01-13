@@ -1,83 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>Article Peer Review</title>
+    <title>Article peer review - login</title>
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/fomantic-ui@2.8.2/dist/semantic.min.css">
     <style>
-        .selection.list > .item {
+        .login-container {
             display: flex;
+            justify-content: center;
             align-items: center;
-            justify-content: space-around;
+            height: 60%;
         }
-        .selection.list > .item i {
-            transition: unset !important;
-        }
-        .selection.list > .item .ui.horizontal.label {
-            margin-left: auto;
+        .login-container > .ui.segment {
+            width: 500px !important;
         }
     </style>
 </head>
 
 <body>
-	<div class="ui grid"> 
-		<div class="three wide column"></div>
-		<div class="five wide column">
-			<div class="ui segment">
-				<div id="article-list" class="ui divided selection list">
-					
-				</div>			
-			</div>
-		</div>
-		<div class="eight wide column">
-			<div class="ui segment">
-	        	<form class="ui form" id="article-form" action="/documents" method="post">
-	        		<div class="field">
-	                    <label>Title</label>
-	                    <input type="text" name="article-title" id="article-title" placeholder="Article title"></div>
-	                <div class="field">
-	                    <label>Content</label>
-	                    <textarea rows="10" name="article-content" id="article-content"></textarea>
-	                </div>
-	                <button class="ui button" type="submit">Send</button>
-	        	</form>
-        	</div>
+    <div class="container login-container">
+        <div class="ui raised container segment">
+            <h2 class="ui header">
+                <i class="file alternate outline icon"></i>
+						<div class="content">Log in
+						<div class="sub header">Documents Review System</div>
+						</div>
+               </h2>
+            <form class="ui form" id="login-form">
+                <div class="field">
+                    <label>Username</label>
+                    <input type="text" name="username" id="username" placeholder="Username" required>
+                </div>
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" name="password" id="password" placeholder="Password" required>
+                </div>
+                <button class="ui button" type="submit">Log in</button>
+            </form>
+            <div class="ui message">New to us? <a href="#">Register</a></div>
         </div>
-	</div>
-
-	<script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
+    </div>
+   
+    <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"></script>
     <script src="https://unpkg.com/fomantic-ui@2.8.2/dist/semantic.min.js"></script>
     <script>
-    	$(document).ready(function() {
-    		$("#article-list").load("/DemoApp/documents");
-    		$("#article-form").submit(function(e) {
-    			e.preventDefault();
-    			var title = $("#article-title").val();
-    			var content = $("#article-content").val();
-    			var dataString = 'title=' + title + '&content=' + content;
-    			$.ajax({
-    				type: "POST",
-    				url: "/DemoApp/documents",
-    				data: dataString,
-    				success: function() {
-    					$("#article-list").load("/DemoApp/documents");
-    				}
-    			});
+    $(document).ready(function() {
+    	$("#login-form").submit(function(e) {
+    		e.preventDefault();
+    		$.ajax({
+    			type: "POST",
+    			url: "/DemoApp/login?username=" + $("#username").val() + "&password=" + $("#password").val(),
+    			success: function(data) {
+    				console.log(data);
+    			}
     		});
     	});
-    	
-    	function loadArticle(id) {
-    		$.ajax({
-    			type: "GET",
-    			url: "/DemoApp/documents?docId=" + id,
-    			success: function(data) {
-    				var article = JSON.parse(data);
-    				$("#article-title").val(article.Title);
-    				$("#article-content").val(article.Content);
-    			}
-    		})
-    	}
+    });
     </script>
 </body>
+
 </html>

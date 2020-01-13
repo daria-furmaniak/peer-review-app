@@ -1,5 +1,7 @@
+package Models;
+
 public class Document {
-	public int Id;
+	public Integer Id;
 	public User Author;
 	public String Title;
 	public String Content;
