@@ -6,28 +6,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
+
 import Models.Approval;
 
 public class ApprovalsRepository {
 	
-	public static ArrayList<Approval> GetApprovals(int documentId) throws SQLException {
-		ArrayList<Approval> list = new ArrayList<Approval>();
-		
-		String sql = "select * from approvals where document_id = ?";
+	public static void saveApproval(int documentId, int userId, boolean approve) throws SQLException {
+		String sql = "update approvals set approved = ?, timestamp = now() where document_id = ? and user_id = ?";
 		PreparedStatement statement = DbManager.getConnection().prepareStatement(sql);
-		ResultSet result;
-		try {
-			result = statement.executeQuery();
-			while (result.next()) {
-				Approval approval = new Approval();
-				approval.Approved = result.getBoolean("approved");
-				approval.Timestamp = result.getDate("timestamp");
-				list.add(approval);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return list;
+		statement.setBoolean(1, approve);
+		statement.setInt(2, documentId);
+		statement.setInt(3, userId);
+		statement.execute();
 	}
 
 }

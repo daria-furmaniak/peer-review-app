@@ -6,15 +6,27 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import Models.Document;
+import Models.User;
 
 public class DocumentsRepository {
 	
-	public static ArrayList<Document> getDocuments() throws SQLException {
+	public static ArrayList<Document> getDocuments(int userId) throws SQLException {
 		ArrayList<Document> list = new ArrayList<Document>();
 		
-		String sql = "select * from documents";
-		Statement statement = DbManager.getConnection().createStatement();
-		ResultSet result = statement.executeQuery(sql);
+		User user = UserRepository.getUser(userId);
+		if (user == null) {
+			return list;
+		}
+		String sql = "";
+		if (user.Role.equals("editor")) {
+			sql = "select * from documents where author_id = ?";
+		} else if (user.Role.equals("reviewer")) {
+			sql = "select d.* from approvals a, documents d " + 
+					"where d.id = a.document_id and a.user_id = ?";
+		}
+		PreparedStatement statement = DbManager.getConnection().prepareStatement(sql);
+		statement.setInt(1, userId);
+		ResultSet result = statement.executeQuery();
 		while (result.next()) {
 			list.add(mapResult(result));
 		}

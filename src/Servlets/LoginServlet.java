@@ -28,7 +28,8 @@ public class LoginServlet extends HttpServlet {
 		try {
 			User user = UserRepository.getUser(username);
 			if (user == null) {
-				response.setStatus(404);				
+				response.setStatus(404);
+				return;
 			}
 			if (user.Password.equals(password)) {
 				PrintWriter out = response.getWriter();

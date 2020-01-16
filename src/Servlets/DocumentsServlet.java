@@ -21,22 +21,35 @@ public class DocumentsServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String docIdParam = request.getParameter("docId");
+		String userIdParam = request.getParameter("user_id");
+		
 		if (docIdParam == null) {
-			printAllDocuments(response);
+			if (userIdParam == null) {
+				response.setStatus(400);
+				return;
+			}
+			int userId = Integer.parseInt(userIdParam);
+			printAllDocuments(userId, response);
 		} else {
 			int docId = Integer.parseInt(docIdParam);
 			printDocument(docId, response);
 		}
 	}
 	
-	private void printAllDocuments(HttpServletResponse response) throws IOException {
+	private void printAllDocuments(int userId, HttpServletResponse response) throws IOException {
 		PrintWriter out = response.getWriter();
 		try {
 			response.setContentType("text/html");
-			ArrayList<Document> documents = DocumentsRepository.getDocuments();
+			ArrayList<Document> documents = DocumentsRepository.getDocuments(userId);
 			for (Document doc : documents) {
 				String color;
 				switch (doc.Status) {
+					case "rejected":
+						color = "red";
+						break;
+					case "approved":
+						color = "green";
+						break;
 					case "sent":
 						color = "pink";
 						break;

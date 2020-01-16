@@ -45,9 +45,6 @@
 			<i class="file alternate outline icon"></i>
 			<span>Document Review System</span>
 		</div>
-		<div class="ui item">
-			<button id="article-add" class="ui primary button">New article</button>
-		</div>
 		<div class="right menu">
 			<a class="ui item" id="logout">Logout</a>
 		</div>
@@ -64,20 +61,19 @@
 			</div>
 			<div class="eleven wide column">
 				<div class="ui segments">
-					<div class="ui secondary segment"><h4>Edit article</h4></div>
+					<div class="ui secondary segment"><h4>Review article</h4></div>
 					<div class="ui segment">
 			        	<form class="ui form" id="article-form" action="/documents" method="post">
 			        		<input type="hidden" id="article-id">
 			        		<div class="field">
 			                    <label>Title</label>
-			                    <input type="text" name="article-title" id="article-title" placeholder="Article title"></div>
+			                    <input type="text" name="article-title" id="article-title" placeholder="Article title" disabled></div>
 			                <div class="field">
 			                    <label>Content</label>
-			                    <textarea rows="10" name="article-content" id="article-content"></textarea>
+			                    <textarea rows="10" name="article-content" id="article-content" disabled></textarea>
 			                </div>
-			                <a id="article-delete" class="ui red button disabled">Delete</a>
-			                <button id="article-submit" class="ui blue button float-right" type="submit">Save</button>
-			                <a id="article-send" class="ui teal button disabled float-right">Send for approval</a>
+			                <a id="article-reject" class="ui red button disabled">Reject</a>
+			                <a id="article-approve" class="ui blue button disabled float-right">Approve</a>
 			        	</form>
 	        		</div>
 				</div>
@@ -93,8 +89,8 @@
     		if (!user) {
     			window.location.href = "index.jsp?error=notLoggedIn";
     		}
-    		if (user.Role !== "editor") {
-    			window.location.href = "reviewer.jsp";
+    		if (user.Role !== "reviewer") {
+    			window.location.href = "user.jsp";
     		}
     		
     		function loadArticles(onSuccess = null) {
@@ -102,62 +98,35 @@
     		}
     		
     		loadArticles();
-    		$("#article-form").submit(function(e) {
-    			e.preventDefault();
-    			var id = $("#article-id").val();
-    			var title = $("#article-title").val();
-    			var content = $("#article-content").val();
-    			var dataString = 'title=' + title + '&content=' + content + '&author_id=' + user.Id;
-    			if (id) {
-    				dataString += '&id=' + id;
-    			}
+    		$("#article-reject").click(function() {
+    			var docId = $("#article-id").val();
     			$.ajax({
     				type: "POST",
-    				url: "/DemoApp/documents",
-    				data: dataString,
-    				success: function(obtainedId) {
-    					$("#article-id").val(obtainedId);
+    				url: "/DemoApp/documents/review",
+    				data: "doc_id=" + docId + "&user_id=" + user.Id + "&action=reject",
+    				success: function() {
     					loadArticles(function() {
-	 	   					$(".item.active").removeClass("active");
-	    		    		$("#article-" + obtainedId).addClass("active");
-	    		    		switchButtons("editing");
+    						switchButtons("rejected");
+    						$(".item.active").removeClass("active");
+    			    		$("#article-" + docId).addClass("active");
     					});
     				}
     			});
     		});
-    		$("#article-add").click(function() {
-    			$("#article-id").val(null);
-				$("#article-title").val(null);
-				$("#article-content").val(null);
-				switchButtons("new");
-				$(".item.active").removeClass("active");
-    		});
-    		$("#article-delete").click(function() {
-    			$.ajax({
-    				type: "DELETE",
-    				url: "/DemoApp/documents?id=" + $("#article-id").val(),
-    				success: function() {
-    					loadArticles();
-    					$("#article-id").val(null);
-    					$("#article-title").val(null);
-    					$("#article-content").val(null);
-    					switchButtons("new");
-    				}
-    			})
-    		});
-    		$("#article-send").click(function(e) {
-    			var docId = $("#article-id").val();
+			$("#article-approve").click(function() {
+				var docId = $("#article-id").val();
     			$.ajax({
     				type: "POST",
-    				url: "/DemoApp/documents/send?id=" + docId,
+    				url: "/DemoApp/documents/review",
+    				data: "doc_id=" + docId + "&user_id=" + user.Id + "&action=approve",
     				success: function() {
     					loadArticles(function() {
+    						switchButtons("approved");
     						$(".item.active").removeClass("active");
     			    		$("#article-" + docId).addClass("active");
     					});
-    					switchButtons("sent");
     				}
-    			})
+    			});
     		});
     		$("#logout").click(function(e) {
     			localStorage.removeItem("user");
@@ -180,32 +149,12 @@
     		})
     	}
     	function switchButtons(status) {
-    		switch (status) {
-    			case "new":
-    				$("#article-delete").addClass("disabled");
-    				$("#article-send").addClass("disabled");
-    				$("#article-submit").removeClass("disabled");
-    				break;
-    			case "editing":
-    				$("#article-delete").removeClass("disabled");
-    				$("#article-send").removeClass("disabled");
-    				$("#article-submit").removeClass("disabled");
-    				break;
-    			case "sent":
-    				$("#article-delete").addClass("disabled");
-    				$("#article-send").addClass("disabled");
-    				$("#article-submit").addClass("disabled");
-    				break;
-    			case "approved":
-    				$("#article-delete").addClass("disabled");
-    				$("#article-send").addClass("disabled");
-    				$("#article-submit").addClass("disabled");
-    				break;
-    			case "rejected":
-    				$("#article-delete").removeClass("disabled");
-    				$("#article-send").removeClass("disabled");
-    				$("#article-submit").removeClass("disabled");
-    				break;
+    		if (status === "sent") {
+    			$("#article-reject").removeClass("disabled");
+				$("#article-approve").removeClass("disabled");
+    		} else {
+    			$("#article-reject").addClass("disabled");
+				$("#article-approve").addClass("disabled");
     		}
     	}
     </script>

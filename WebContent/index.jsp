@@ -62,10 +62,14 @@
     			url: "/DemoApp/login?username=" + $("#username").val() + "&password=" + $("#password").val(),
     			success: function(data) {
     				localStorage.setItem("user", JSON.stringify(data));
-    				window.location.href = "user.jsp";
+    				if (data.Role === "editor") {
+	    				window.location.href = "user.jsp";					
+    				} else {
+    					window.location.href = "reviewer.jsp";
+    				}
     			},
     			error: function(xhr) {
-    				if (xhr.status === 400) {
+    				if ([400, 404].includes(xhr.status)) {
     					printMessage("wrongCredentials");
     				} else {
     					printMessage("unknown");
@@ -94,7 +98,6 @@
 				break;
 			}
     	var messageDiv = $("#error-message");
-    	console.log(messageDiv);
     	messageDiv.removeClass("error success d-none");
     	messageDiv.addClass(messageType);
 		messageDiv.html(messageText);
