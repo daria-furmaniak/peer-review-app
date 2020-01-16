@@ -42,7 +42,7 @@ public class LoginServlet extends HttpServlet {
 				response.setStatus(400);
 			}
 		} catch (SQLException | IOException e) {
-			
+			response.setStatus(500);
 		}
 	}
 }

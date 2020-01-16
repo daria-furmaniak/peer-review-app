@@ -16,7 +16,7 @@
 	    	font-size: 1.5rem;
 	    }
 	    .ui.bottom.attached.segment {
-	    	height: calc(100vh - 49px);
+	    	height: calc(100vh - 50px);
 	    	margin-bottom: 0;
 	    }
         .selection.list > .item {
