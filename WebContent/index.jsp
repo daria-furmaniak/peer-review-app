@@ -15,6 +15,9 @@
         .login-container > .ui.segment {
             width: 500px !important;
         }
+        .d-none {
+        	display: none;
+        }
     </style>
 </head>
 
@@ -23,10 +26,11 @@
         <div class="ui raised container segment">
             <h2 class="ui header">
                 <i class="file alternate outline icon"></i>
-						<div class="content">Log in
-						<div class="sub header">Documents Review System</div>
-						</div>
-               </h2>
+				<div class="content">
+					<span>Log in</span>
+					<div class="sub header">Document Review System</div>
+				</div>
+            </h2>
             <form class="ui form" id="login-form">
                 <div class="field">
                     <label>Username</label>
@@ -38,7 +42,7 @@
                 </div>
                 <button class="ui button" type="submit">Log in</button>
             </form>
-            <div class="ui message">New to us? <a href="#">Register</a></div>
+            <div class="ui message d-none" id="error-message">Please log in.</div>
         </div>
     </div>
    
@@ -46,17 +50,55 @@
     <script src="https://unpkg.com/fomantic-ui@2.8.2/dist/semantic.min.js"></script>
     <script>
     $(document).ready(function() {
+    	var urlParams = new URLSearchParams(window.location.search);
+    	if (urlParams.has("error")) {
+    		var error = urlParams.get("error");
+    		printMessage(error);
+    	}
     	$("#login-form").submit(function(e) {
     		e.preventDefault();
     		$.ajax({
     			type: "POST",
     			url: "/DemoApp/login?username=" + $("#username").val() + "&password=" + $("#password").val(),
     			success: function(data) {
-    				console.log(data);
+    				localStorage.setItem("user", JSON.stringify(data));
+    				window.location.href = "user.jsp";
+    			},
+    			error: function(xhr) {
+    				if (xhr.status === 400) {
+    					printMessage("wrongCredentials");
+    				} else {
+    					printMessage("unknown");
+    				}
     			}
     		});
     	});
     });
+    
+    function printMessage(message) {
+    	var messageText;
+    	var messageType = "error";
+    	switch (message) {
+			case "loggedOut":
+				messageType = "success";
+				messageText = "You've been logged out successfully.";
+				break;
+			case "notLoggedIn":
+				messageText = "You are not logged in.";
+				break;
+			case "wrongCredentials":
+				messageText = "Your username and/or password are incorrect.";
+				break;
+			case "unknown":
+				messageText = "An unknown error has occured.";
+				break;
+			}
+    	var messageDiv = $("#error-message");
+    	console.log(messageDiv);
+    	messageDiv.removeClass("error success d-none");
+    	messageDiv.addClass(messageType);
+		messageDiv.html(messageText);
+    }
     </script>
 </body>
 

@@ -35,14 +35,23 @@ public class DocumentsServlet extends HttpServlet {
 			response.setContentType("text/html");
 			ArrayList<Document> documents = DocumentsRepository.getDocuments();
 			for (Document doc : documents) {
+				String color;
+				switch (doc.Status) {
+					case "sent":
+						color = "pink";
+						break;
+					default:
+						color = "primary";
+				}
 	        	out.println("<div class=\"item\" id=\"article-" + doc.Id + "\" onclick=\"loadArticle(" + doc.Id + ")\">");
-	        	out.println("<i class=\"file primary alternate big icon\"></i>");
+	        	out.println("<i class=\"file " + color + " alternate big icon\"></i>");
 				out.println(doc.Title);
-				out.println("<div class=\"ui primary horizontal label\">editing</div>");
+				out.println("<div class=\"ui " + color + " horizontal label\">" + doc.Status + "</div>");
 				out.println("</div>");
 			}
-		} catch (SQLException ex) {
-			out.println("Could not connect to the database.");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			response.setStatus(500);
 		}
 	}
 	
@@ -54,8 +63,9 @@ public class DocumentsServlet extends HttpServlet {
 			Gson gson = new Gson();
 			String json = gson.toJson(doc);
 			out.println(json);
-		} catch (SQLException ex) {
-			out.println("Could not connect to the database.");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			response.setStatus(500);
 		}
 		
 	}
@@ -66,13 +76,19 @@ public class DocumentsServlet extends HttpServlet {
 		if (idParam != null) {
 			doc.Id = Integer.parseInt(idParam);			
 		}
+		String authorIdParam = request.getParameter("author_id");
+		if (authorIdParam != null) {
+			doc.AuthorId = Integer.parseInt(authorIdParam);
+		}
 		doc.Title = request.getParameter("title");
 		doc.Content = request.getParameter("content");
 		
 		try {
-			DocumentsRepository.saveDocument(doc);
-		} catch (SQLException e) {
+			int obtainedId = DocumentsRepository.saveDocument(doc);
+			response.getWriter().println(obtainedId);
+		} catch (SQLException | IOException e) {
 			e.printStackTrace();
+			response.setStatus(500);
 		}
 	}
 	
@@ -86,6 +102,7 @@ public class DocumentsServlet extends HttpServlet {
 			DocumentsRepository.deleteDocument(Integer.parseInt(idParam));
 		} catch (SQLException e) {
 			e.printStackTrace();
+			response.setStatus(500);
 		}
 	}
 

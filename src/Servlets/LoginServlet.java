@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
 			if (user == null) {
 				response.setStatus(404);				
 			}
-			if (user.Password == password) {
+			if (user.Password.equals(password)) {
 				PrintWriter out = response.getWriter();
 				response.setContentType("application/json");
 				Gson gson = new Gson();
