@@ -1,5 +1,6 @@
 package Models;
-import java.sql.Date;
+
+import java.util.Date;
 
 public class Approval {
 	public Document Document;

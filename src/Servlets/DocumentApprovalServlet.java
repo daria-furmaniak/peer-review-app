@@ -21,7 +21,7 @@ public class DocumentApprovalServlet extends HttpServlet {
 		
 		int id = Integer.parseInt(idParam);
 		try {
-			DocumentsRepository.updateDocument(id, "sent");
+			DocumentsRepository.updateDocument(id, "pending");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			response.setStatus(500);

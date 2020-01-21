@@ -41,6 +41,9 @@ public class DocumentsServlet extends HttpServlet {
 		try {
 			response.setContentType("text/html");
 			ArrayList<Document> documents = DocumentsRepository.getDocuments(userId);
+			if (documents.isEmpty()) {
+				out.println("<div class=\"empty disabled item\">No articles.</div>");
+			}
 			for (Document doc : documents) {
 				String color;
 				switch (doc.Status) {
@@ -50,14 +53,14 @@ public class DocumentsServlet extends HttpServlet {
 					case "approved":
 						color = "green";
 						break;
-					case "sent":
-						color = "pink";
+					case "pending":
+						color = "purple";
 						break;
 					default:
 						color = "primary";
 				}
 	        	out.println("<div class=\"item\" id=\"article-" + doc.Id + "\" onclick=\"loadArticle(" + doc.Id + ")\">");
-	        	out.println("<i class=\"file " + color + " alternate big icon\"></i>");
+	        	out.println("<i class=\"file " + color + " alternate outline big icon\"></i>");
 				out.println(doc.Title);
 				out.println("<div class=\"ui " + color + " horizontal label\">" + doc.Status + "</div>");
 				out.println("</div>");

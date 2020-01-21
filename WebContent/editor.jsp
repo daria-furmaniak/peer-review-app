@@ -16,7 +16,7 @@
 	    	font-size: 1.5rem;
 	    }
 	    .ui.bottom.attached.segment {
-	    	height: calc(100vh - 50px);
+	    	height: calc(100vh - 49px);
 	    	margin-bottom: 0;
 	    }
         .selection.list > .item {
@@ -39,6 +39,9 @@
         .p-0 {
         	padding: 0 !important;
         }
+        .ml-1 {
+        	margin-left: 1rem !important;
+        }
     </style>
 </head>
 
@@ -54,7 +57,7 @@
 	</div>
 	<div class="ui bottom attached segment">
 		<div class="ui grid">
-			<div class="five wide column">
+			<div class="four wide column">
 				<div class="ui segments">
 					<div class="ui secondary segment"><h4>Articles</h4></div>
 					<div class="ui segment p-0">
@@ -62,7 +65,7 @@
 					</div>						
 				</div>
 			</div>
-			<div class="eleven wide column">
+			<div class="eight wide column">
 				<div class="ui segments">
 					<div class="ui secondary segment"><h4>Review article</h4></div>
 					<div class="ui segment">
@@ -86,6 +89,22 @@
 	        		</div>
 				</div>
 	        </div>
+	        <div class="four wide column">
+	        	<div class="ui segments">
+	        		<div class="ui secondary segment"><h4>Approvals</h4></div>
+	        		<div class="ui segment p-0">
+	        			<div id="approval-list" class="ui divided selection list">
+	        				<div class="item">
+	        					<div class="ui fluid selection disabled dropdown" id="approval-dropdown">
+	        						<div class="text"></div>
+	        						<i class="dropdown icon"></i>
+						        </div>
+						        <a class="ui primary tiny disabled button ml-1" id="approval-dropdown-add" onclick="addReviewer()">Add</a>
+	        				</div>
+	        			</div>
+	        		</div>
+	        	</div>
+	        </div>
 	    </div>
 	</div>
 
@@ -97,7 +116,7 @@
     		if (!user) {
     			window.location.href = "index.jsp?error=notLoggedIn";
     		}
-    		if (user.Role !== "reviewer") {
+    		if (user.Role !== "editor") {
     			window.location.href = user.Role + ".jsp";
     		}
     		
@@ -106,7 +125,6 @@
     		}
     		
     		loadArticles();
-    		$(".ui.dropdown").dropdown();
     		$("#article-reject").click(function() {
     			var docId = $("#article-id").val();
     			$.ajax({
@@ -150,23 +168,67 @@
     			type: "GET",
     			url: "/DemoApp/documents?docId=" + id,
     			success: function(article) {
-    				console.log(article);
     				$("#article-id").val(article.Id);
     				$("#article-title").val(article.Title);
     				$("#article-author").val(article.Author.FirstName + " " + article.Author.LastName);
     				$("#article-content").val(article.Content);
     				switchButtons(article.Status);
+    				if (!["approved", "rejected"].includes(article.Status)) {
+    					loadReviewers();
+    				} else {
+    					$("#approval-dropdown").addClass("disabled");
+        				$("#approval-dropdown-add").addClass("disabled");
+    				}
+    				loadApprovals(id);
+    			}
+    		});
+    	}
+    	function loadApprovals(docId) {
+    		$.ajax({
+    			type: "GET",
+    			url: "/DemoApp/approvals?docId=" + docId,
+    			success: function(approvals) {
+   					$(".approval.item").remove();
+   					if (approvals.length >= 3) {
+   						$("#approval-dropdown").addClass("disabled");
+   	    				$("#approval-dropdown-add").addClass("disabled");
+   					}
+  						for (var a of approvals) {
+  	    					const status = !a.Timestamp ? "pending" : a.Approved ? "approved" : "rejected";
+  	    					const color = status === "approved" ? "green" : status === "rejected" ? "red" : "purple";
+  	    					$("#approval-list").append("<div class=\"item approval\"><i class=\"user " + color + " circle outline big icon\"></i>" +
+  	    							a.User.FirstName + " " + a.User.LastName +
+  	    							"<div class=\"ui horizontal " + color + " label\">" + status + "</div></div>");	
+  	    				}
     			}
     		})
     	}
+    	function loadReviewers() {
+    		$.ajax({
+    			type: "GET",
+    			url: "/DemoApp/users?role=reviewer",
+    			success: function(users) {
+    				const u = users.map(x => ({ name: x.FirstName + " " + x.LastName, value: x.Id }));
+    				$("#approval-dropdown").dropdown({
+    					values: u
+    				});
+    				$("#approval-dropdown").removeClass("disabled");
+    				$("#approval-dropdown-add").removeClass("disabled");
+    			}
+    		})
+    	}
+    	function addReviewer() {
+    		const docId = $("#article-id").val();
+    		const userId = $("#approval-dropdown").dropdown("get value");
+    		$.ajax({
+    			type: "POST",
+    			url: "/DemoApp/approvals?docId=" + docId + "&userId=" + userId,
+    			success: function() {
+    				loadApprovals(docId);
+    			}
+    		});
+    	}
     	function switchButtons(status) {
-    		if (status === "pending") {
-    			$("#article-reject").removeClass("disabled");
-				$("#article-approve").removeClass("disabled");
-    		} else {
-    			$("#article-reject").addClass("disabled");
-				$("#article-approve").addClass("disabled");
-    		}
     	}
     </script>
 </body>

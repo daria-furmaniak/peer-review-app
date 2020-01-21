@@ -1,12 +1,15 @@
 package Servlets;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import Models.Approval;
 import Repository.ApprovalsRepository;
 import Repository.DocumentsRepository;
 
@@ -27,10 +30,26 @@ public class ReviewServlet extends HttpServlet {
 		boolean approve = action.equals("approve");
 		try {
 			ApprovalsRepository.saveApproval(documentId, userId, approve);
-			DocumentsRepository.updateDocument(documentId, approve ? "approved" : "rejected");
+			if (!approve) {
+				DocumentsRepository.updateDocument(documentId, "rejected");
+			} else {
+				ArrayList<Approval> approvals = ApprovalsRepository.getApprovals(documentId);
+				if (approvals.size() == 3 && everyApprovalPositive(approvals)) {
+					DocumentsRepository.updateDocument(documentId, "approved");
+				}
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			response.setStatus(500);
 		}
+	}
+	
+	private boolean everyApprovalPositive(ArrayList<Approval> list) {
+		for (Approval a : list) {
+			if (!a.Approved) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

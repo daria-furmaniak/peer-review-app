@@ -24,6 +24,9 @@
             align-items: center;
             justify-content: space-around;
         }
+        .selection.list > .empty.item {
+        	display: block;
+        }
         .selection.list > .item i {
             transition: unset !important;
         }
@@ -93,8 +96,9 @@
     		if (!user) {
     			window.location.href = "index.jsp?error=notLoggedIn";
     		}
-    		if (user.Role !== "editor") {
-    			window.location.href = "reviewer.jsp";
+    		
+    		if (user.Role !== "user") {
+    			window.location.href = user.Role + ".jsp";
     		}
     		
     		function loadArticles(onSuccess = null) {
@@ -155,7 +159,7 @@
     						$(".item.active").removeClass("active");
     			    		$("#article-" + docId).addClass("active");
     					});
-    					switchButtons("sent");
+    					switchButtons("pending");
     				}
     			})
     		});
@@ -191,7 +195,7 @@
     				$("#article-send").removeClass("disabled");
     				$("#article-submit").removeClass("disabled");
     				break;
-    			case "sent":
+    			case "pending":
     				$("#article-delete").addClass("disabled");
     				$("#article-send").addClass("disabled");
     				$("#article-submit").addClass("disabled");
@@ -202,7 +206,7 @@
     				$("#article-submit").addClass("disabled");
     				break;
     			case "rejected":
-    				$("#article-delete").removeClass("disabled");
+    				$("#article-delete").addClass("disabled");
     				$("#article-send").removeClass("disabled");
     				$("#article-submit").removeClass("disabled");
     				break;

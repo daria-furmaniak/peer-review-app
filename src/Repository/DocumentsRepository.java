@@ -18,14 +18,18 @@ public class DocumentsRepository {
 			return list;
 		}
 		String sql = "";
-		if (user.Role.equals("editor")) {
+		if (user.Role.equals("user")) {
 			sql = "select * from documents where author_id = ?";
 		} else if (user.Role.equals("reviewer")) {
 			sql = "select d.* from approvals a, documents d " + 
 					"where d.id = a.document_id and a.user_id = ?";
+		} else if (user.Role.equals("editor")) {
+			sql = "select * from documents";
 		}
 		PreparedStatement statement = DbManager.getConnection().prepareStatement(sql);
-		statement.setInt(1, userId);
+		if (user.Role.equals("user") || user.Role.equals("reviewer")) {
+			statement.setInt(1, userId);			
+		}
 		ResultSet result = statement.executeQuery();
 		while (result.next()) {
 			list.add(mapResult(result));
@@ -43,7 +47,11 @@ public class DocumentsRepository {
 		if (!result.next()) {
 			return null;
 		}
-		return mapResult(result);
+		Document doc = mapResult(result);
+		doc.AuthorId = result.getInt("author_id");
+		doc.Author = UserRepository.getUser(doc.AuthorId);
+		doc.Author.Password = null;
+		return doc;
 	}
 	
 	public static int saveDocument(Document doc) throws SQLException {
